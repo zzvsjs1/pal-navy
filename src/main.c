@@ -21,6 +21,7 @@
 //
 
 #include "main.h"
+#include <string.h>
 
 #define BITMAPNUM_SPLASH_UP         (gConfig.fIsWIN95 ? 0x03 : 0x26)
 #define BITMAPNUM_SPLASH_DOWN       (gConfig.fIsWIN95 ? 0x04 : 0x27)
@@ -468,8 +469,39 @@ main(
    //
    // Show the trademark screen and splash screen
    //
-   PAL_TrademarkScreen();
-   PAL_SplashScreen();
+
+   int playTrademark = 1;
+   int playSplash = 1;
+
+   if (argc > 0)
+   {
+      for (int i = 0; i < argc; ++i)
+      {
+         if (strcmp(argv[i], "--skip-splash") == 0)
+         {
+            playSplash = 0;
+         }
+         else if (strcmp(argv[i], "--skip-trademark") == 0)
+         {
+            playTrademark = 0;
+         }
+         else if (strcmp(argv[i], "--skip") == 0)
+         {
+            playTrademark = 0;
+            playSplash = 0;
+         }
+      }
+   }
+
+   if (playTrademark)
+   {
+      PAL_TrademarkScreen();
+   }
+
+   if (playSplash)
+   {
+      PAL_SplashScreen();
+   }
 
    //
    // Run the main game routine

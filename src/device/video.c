@@ -182,6 +182,7 @@ VIDEO_UpdateScreen(
    short           offset = 240 - 200;
    short           screenRealHeight = gpScreenReal->h;
    short           screenRealY = 0;
+   BOOL            fUpdatedDirectly = FALSE;
 
 
    //
@@ -206,7 +207,8 @@ VIDEO_UpdateScreen(
       dstrect.w = (WORD)((DWORD)(lpRect->w) * gpScreenReal->w / gpScreen->w);
       dstrect.h = (WORD)((DWORD)(lpRect->h) * screenRealHeight / gpScreen->h);
 
-      SDL_SoftStretch(gpScreen, (SDL_Rect *)lpRect, gpScreenReal, &dstrect);
+      SDL_SoftStretchUpdate(gpScreen, (SDL_Rect *)lpRect, gpScreenReal, &dstrect);
+      fUpdatedDirectly = TRUE;
    }
    else if (g_wShakeTime != 0)
    {
@@ -259,14 +261,18 @@ VIDEO_UpdateScreen(
       dstrect.w = gpScreenReal->w;
       dstrect.h = screenRealHeight;
 
-      SDL_SoftStretch(gpScreen, NULL, gpScreenReal, &dstrect);
+      SDL_SoftStretchUpdate(gpScreen, NULL, gpScreenReal, &dstrect);
+      fUpdatedDirectly = TRUE;
 
       dstrect.x = dstrect.y = 0;
       dstrect.w = gpScreenReal->w;
       dstrect.h = gpScreenReal->h;
    }
 
-   SDL_UpdateRect(gpScreenReal, dstrect.x, dstrect.y, dstrect.w, dstrect.h);
+   if (!fUpdatedDirectly)
+   {
+      SDL_UpdateRect(gpScreenReal, dstrect.x, dstrect.y, dstrect.w, dstrect.h);
+   }
    IncreaseDraw();
 
    if (SDL_MUSTLOCK(gpScreenReal))
@@ -530,8 +536,7 @@ VIDEO_SwitchScreen(
 			  return;
 	  }
 
-      SDL_SoftStretch(gpScreenBak, NULL, gpScreenReal, &dstrect);
-      SDL_UpdateRect(gpScreenReal, 0, 0, gpScreenReal->w, gpScreenReal->h);
+      SDL_SoftStretchUpdate(gpScreenBak, NULL, gpScreenReal, &dstrect);
       IncreaseDraw();
 
 	  if (SDL_MUSTLOCK(gpScreenReal))
@@ -682,8 +687,7 @@ VIDEO_FadeScreen(
             dstrect.w = gpScreenReal->w;
             dstrect.h = screenRealHeight;
 
-            SDL_SoftStretch(gpScreenBak, NULL, gpScreenReal, &dstrect);
-            SDL_UpdateRect(gpScreenReal, 0, 0, gpScreenReal->w, gpScreenReal->h);
+            SDL_SoftStretchUpdate(gpScreenBak, NULL, gpScreenReal, &dstrect);
             IncreaseDraw();
          }
       }
@@ -861,9 +865,7 @@ VIDEO_DrawSurfaceToScreen(
    //
    // Draw the surface to screen.
    //
-   SDL_SoftStretch(pCompatSurface, NULL, gpScreenReal, NULL);
-
-   SDL_UpdateRect(gpScreenReal, 0, 0, gpScreenReal->w, gpScreenReal->h);
+   SDL_SoftStretchUpdate(pCompatSurface, NULL, gpScreenReal, NULL);
    IncreaseDraw();
    SDL_FreeSurface(pCompatSurface);
 }
